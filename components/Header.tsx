@@ -27,9 +27,9 @@ const Header: React.FC = () => {
         <div className="flex items-center space-x-4">
           <button 
             onClick={scrollToQuiz}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-full font-bold transition-all transform hover:scale-105 active:scale-95 shadow-md shadow-blue-100"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-full font-bold transition-all transform hover:scale-105 active:scale-95 shadow-md shadow-blue-100 text-sm"
           >
-            Check Qualification
+            Start Your Upgrade
           </button>
         </div>
       </div>

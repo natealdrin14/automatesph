@@ -1,15 +1,145 @@
-
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import QuizForm from '../components/QuizForm';
-import { HOW_IT_WORKS, OUTCOMES, FAQS } from '../constants';
+import { HOW_IT_WORKS, OUTCOMES, BLUEPRINT, FAQS, BundleItem, BenefitOutcome, BlueprintStep } from '../constants';
+
+interface ModalBaseProps {
+  title: string;
+  subtitle: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+  close: () => void;
+  navItems: any[];
+  currentActive: any;
+  onNav: (item: any, list: any[], setter: (v: any) => void) => void;
+  setter: (v: any) => void;
+  swipeDirection: 'left' | 'right';
+  onCTAClick: () => void;
+}
+
+const ModalBase: React.FC<ModalBaseProps> = ({ 
+  title, subtitle, icon, children, close, navItems, currentActive, onNav, setter, swipeDirection, onCTAClick 
+}) => {
+  return (
+    <div 
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-modal-overlay"
+      onClick={close}
+    >
+      <div 
+        className="bg-white text-slate-900 w-full max-w-[440px] rounded-[2.5rem] overflow-hidden shadow-2xl relative flex flex-col h-[640px] animate-modal-window"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Fixed Close Button */}
+        <button 
+          onClick={close}
+          className="absolute top-6 right-6 text-slate-400 hover:text-slate-900 transition-colors z-[120]"
+        >
+          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        {/* Modal Header (Fixed) */}
+        <div className="px-8 pt-8 pb-4 flex items-center space-x-5 shrink-0 bg-white">
+          <div className="w-14 h-14 bg-slate-900 text-white rounded-2xl flex items-center justify-center shrink-0 shadow-lg">
+            {icon || <span className="font-bold text-xl">{currentActive.step}</span>}
+          </div>
+          <div className="min-w-0">
+            <p key={subtitle} className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-1 animate-title-change">
+              {subtitle}
+            </p>
+            <h4 key={title} className="text-3xl font-black text-slate-900 leading-none truncate animate-title-change">
+              {title}
+            </h4>
+          </div>
+        </div>
+
+        {/* Swiping Content Area (The only part that swipes) */}
+        <div className="flex-grow px-8 pt-4 pb-4 bg-white relative overflow-hidden flex flex-col">
+          <div 
+            key={currentActive.title || currentActive.step} 
+            className={`flex flex-col space-y-4 h-full ${swipeDirection === 'right' ? 'animate-content-right' : 'animate-content-left'}`}
+          >
+            <div className="flex-grow overflow-y-auto scrollbar-hide space-y-4">
+                {children}
+            </div>
+          </div>
+        </div>
+
+        {/* Persistent Footer: CTA + Chip Nav (Fixed) */}
+        <div className="shrink-0 bg-white">
+          <div className="px-8 pb-4">
+            <button 
+              onClick={onCTAClick}
+              className="w-full py-5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-all shadow-xl shadow-blue-100 flex items-center justify-center space-x-3 active:scale-[0.98]"
+            >
+              <span className="text-base">Upgrade My Business</span>
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Modal Bottom Nav - Enhanced Horizontal Scroll with Fades */}
+          <div className="relative bg-slate-50 border-t border-slate-100">
+            {/* Left Fade Overlay */}
+            <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-slate-50 to-transparent z-10 pointer-events-none"></div>
+            
+            <div className="px-6 py-5 overflow-x-auto scrollbar-subtle scroll-smooth">
+              <div className="flex flex-nowrap gap-2 justify-start md:justify-center px-4 min-w-max">
+                {navItems.map((item: any, idx: number) => (
+                  <button
+                    key={idx}
+                    onClick={() => onNav(item, navItems, setter)}
+                    className={`px-5 py-2.5 rounded-full text-[9px] font-bold uppercase tracking-[0.2em] transition-all border shrink-0 ${
+                      currentActive === item 
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-lg transform scale-105' 
+                      : 'bg-white text-slate-400 border-slate-200 hover:border-blue-300 hover:text-blue-500 shadow-sm'
+                    }`}
+                  >
+                    {item.title || `Step ${item.step}`}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Right Fade Overlay */}
+            <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-slate-50 to-transparent z-10 pointer-events-none"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const LandingPage: React.FC = () => {
-  useEffect(() => {
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -50px 0px'
-    };
+  const [activeBundle, setActiveBundle] = useState<BundleItem | null>(null);
+  const [activeBenefit, setActiveBenefit] = useState<BenefitOutcome | null>(null);
+  const [activeBlueprint, setActiveBlueprint] = useState<BlueprintStep | null>(null);
+  const [activeFaq, setActiveFaq] = useState<number | null>(null);
+  
+  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right'>('right');
+  const lastIndex = useRef(-1);
+  const scrollPosition = useRef(0);
 
+  // Body scroll locking
+  useEffect(() => {
+    const isAnyModalOpen = !!(activeBundle || activeBenefit || activeBlueprint);
+    const body = document.body;
+    
+    if (isAnyModalOpen) {
+      scrollPosition.current = window.scrollY;
+      body.style.top = `-${scrollPosition.current}px`;
+      body.classList.add('no-scroll');
+    } else {
+      body.classList.remove('no-scroll');
+      body.style.top = '';
+      window.scrollTo(0, scrollPosition.current);
+    }
+  }, [activeBundle, activeBenefit, activeBlueprint]);
+
+  // Reveal-on-scroll
+  useEffect(() => {
+    const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -20,163 +150,303 @@ const LandingPage: React.FC = () => {
 
     const elements = document.querySelectorAll('.reveal');
     elements.forEach(el => observer.observe(el));
-
-    return () => {
-      elements.forEach(el => observer.unobserve(el));
-    };
+    return () => elements.forEach(el => observer.unobserve(el));
   }, []);
 
-  const scrollToQuiz = () => {
-    document.getElementById('quiz-section')?.scrollIntoView({ behavior: 'smooth' });
+  const closeModals = () => {
+    setActiveBundle(null);
+    setActiveBenefit(null);
+    setActiveBlueprint(null);
+    lastIndex.current = -1;
   };
 
-  const scrollToHow = () => {
-    document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
+  const handleNav = (item: any, list: any[], setter: (v: any) => void) => {
+    const newIndex = list.indexOf(item);
+    setSwipeDirection(newIndex > lastIndex.current ? 'right' : 'left');
+    lastIndex.current = newIndex;
+    setter(item);
+  };
+
+  const scrollToQuiz = () => {
+    closeModals();
+    setTimeout(() => {
+      document.getElementById('quiz-section')?.scrollIntoView({ behavior: 'smooth' });
+    }, 150);
   };
 
   return (
-    <div className="overflow-x-hidden">
-      {/* Hero Section */}
-      <section className="relative pt-20 pb-16 lg:pt-32 lg:pb-36 px-4 overflow-hidden">
-        <div className="max-w-7xl mx-auto text-center">
-          <div className="inline-block px-5 py-2 mb-8 text-xs font-bold tracking-widest text-blue-600 uppercase bg-blue-50 rounded-full animate-slide-up opacity-0" style={{ animationDelay: '0ms' }}>
-            Smart Websites for Modern Growth
+    <div className="bg-white">
+      {/* Hero */}
+      <section className="relative pt-20 pb-28 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <div className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-full mb-10 reveal">
+             <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
+            </span>
+            <span className="text-xs font-bold uppercase tracking-widest">Growth Engines for Business</span>
           </div>
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight text-slate-900 mb-8 leading-[1.1] animate-slide-up opacity-0" style={{ animationDelay: '150ms' }}>
-            Turn Every Visitor Into <br className="hidden md:block" />
-            <span className="text-blue-600">A Loyal Customer.</span>
+          <h1 className="text-5xl md:text-7xl font-black font-heading tracking-tight text-slate-900 mb-8 leading-tight reveal">
+            Transform Your Presence into a <br />
+            <span className="text-blue-600">Lead Machine.</span>
           </h1>
-          <p className="text-lg md:text-xl text-slate-500 mb-12 max-w-3xl mx-auto leading-relaxed animate-slide-up opacity-0" style={{ animationDelay: '300ms' }}>
-            AutomatesPH delivers a complete growth engine. High-performance design, automated lead capture, and AI-driven nurture systems. Bundled, managed, and optimized for you.
+          <p className="max-w-2xl mx-auto text-xl text-slate-500 mb-12 reveal">
+            We build high-performance smart websites that don't just look pretty—they capture, manage, and nurture leads automatically.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 animate-slide-up opacity-0" style={{ animationDelay: '450ms' }}>
+          <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 reveal">
             <button 
-              onClick={scrollToQuiz}
-              className="w-full sm:w-auto px-10 py-5 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-bold text-lg shadow-xl shadow-blue-100 transition-all transform hover:scale-105 active:scale-95"
+              onClick={() => document.getElementById('quiz-section')?.scrollIntoView({ behavior: 'smooth' })}
+              className="px-10 py-5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold text-lg transition-all shadow-xl shadow-blue-100 transform hover:scale-105 active:scale-95"
             >
-              See If You Qualify
+              Check Qualification
             </button>
             <button 
-              onClick={scrollToHow}
-              className="w-full sm:w-auto px-10 py-5 bg-white hover:bg-slate-50 text-slate-700 rounded-full font-bold text-lg border border-slate-200 transition-all transform hover:scale-105"
+              onClick={() => document.getElementById('bundle-section')?.scrollIntoView({ behavior: 'smooth' })}
+              className="px-10 py-5 bg-white border border-slate-200 hover:border-slate-900 text-slate-900 rounded-2xl font-bold text-lg transition-all"
             >
-              View How It Works
+              Explore the Bundle
             </button>
           </div>
         </div>
+      </section>
 
-        {/* Decorative elements */}
-        <div className="absolute top-0 -left-64 w-[500px] h-[500px] bg-blue-50 rounded-full blur-[120px] opacity-40 -z-10 animate-fade-in" />
-        <div className="absolute bottom-0 -right-64 w-[500px] h-[500px] bg-indigo-50 rounded-full blur-[120px] opacity-40 -z-10 animate-fade-in" />
+      {/* Smart Bundle Sections */}
+      <section id="bundle-section" className="py-24 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-16 reveal">
+            <h2 className="text-sm font-bold text-blue-600 uppercase tracking-widest mb-4">The Solution</h2>
+            <h3 className="text-4xl font-black text-slate-900">The Smart Bundle</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {HOW_IT_WORKS.map((item, idx) => (
+              <button 
+                key={idx}
+                onClick={() => {
+                  lastIndex.current = idx;
+                  setActiveBundle(item);
+                }}
+                className="group p-8 bg-white rounded-3xl border border-slate-100 text-left transition-all hover:shadow-2xl hover:-translate-y-1 reveal"
+              >
+                <div className="flex items-center space-x-5 mb-6">
+                  <div className="flex-shrink-0 w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110">
+                    {item.icon}
+                  </div>
+                  <div>
+                    <h4 className="text-2xl font-bold text-slate-900 leading-none mb-1">{item.title}</h4>
+                    <p className="text-xs font-bold text-blue-600 uppercase tracking-wider">{item.subtitle}</p>
+                  </div>
+                </div>
+                <p className="text-slate-500 leading-relaxed mb-6">{item.description}</p>
+                <span className="text-blue-600 font-bold text-xs uppercase tracking-widest flex items-center group-hover:translate-x-1 transition-transform">
+                  View Strategy 
+                  <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path d="M9 5l7 7-7 7" strokeWidth="2.5" />
+                  </svg>
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Blueprint Section */}
+      <section className="py-24 bg-slate-900 text-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-16 reveal">
+            <h2 className="text-sm font-bold text-blue-400 uppercase tracking-widest mb-4">Our Process</h2>
+            <h3 className="text-4xl font-black">14-Day Delivery</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {BLUEPRINT.map((step, idx) => (
+              <button 
+                key={idx}
+                onClick={() => {
+                    lastIndex.current = idx;
+                    setActiveBlueprint(step);
+                }}
+                className="group p-8 bg-white/5 border border-white/10 rounded-3xl text-left transition-all hover:bg-white/10 reveal"
+              >
+                <div className="flex items-center space-x-5 mb-6">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-full border-2 border-blue-500 flex items-center justify-center text-blue-400 font-bold">
+                    {step.step}
+                  </div>
+                  <div>
+                    <h4 className="text-xl font-bold">{step.title}</h4>
+                    <p className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.2em]">{step.timeline}</p>
+                  </div>
+                </div>
+                <p className="text-slate-400 mb-6">{step.desc}</p>
+                <span className="text-white font-bold text-xs uppercase tracking-widest flex items-center">
+                  Full Timeline 
+                  <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path d="M9 5l7 7-7 7" strokeWidth="2.5" />
+                  </svg>
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Results Section */}
+      <section className="py-24">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-16 reveal">
+            <h2 className="text-sm font-bold text-blue-600 uppercase tracking-widest mb-4">Results</h2>
+            <h3 className="text-4xl font-black text-slate-900">Real Growth, Real Freedom</h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {OUTCOMES.map((outcome, idx) => (
+              <button 
+                key={idx} 
+                onClick={() => {
+                    lastIndex.current = idx;
+                    setActiveBenefit(outcome);
+                }}
+                className="group p-10 bg-slate-50 border border-slate-100 rounded-3xl text-left transition-all hover:bg-blue-600 hover:text-white hover:shadow-2xl hover:-translate-y-1 reveal"
+              >
+                <div className="w-20 h-20 bg-white text-blue-600 rounded-3xl flex items-center justify-center mb-8 shadow-sm group-hover:scale-110 transition-transform">
+                  {outcome.icon}
+                </div>
+                <h4 className="text-2xl font-bold mb-4">{outcome.title}</h4>
+                <p className="text-slate-500 mb-8 leading-relaxed group-hover:text-blue-50">{outcome.description}</p>
+                <span className="font-bold text-sm uppercase tracking-widest flex items-center">
+                  See Business Impact 
+                  <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path d="M9 5l7 7-7 7" strokeWidth="2.5" />
+                  </svg>
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* Quiz Section */}
-      <section id="quiz-section" className="py-20 md:py-24 px-4 bg-slate-50/50 reveal">
-        <div className="max-w-7xl mx-auto">
+      <section id="quiz-section" className="py-24 bg-slate-50 scroll-mt-20">
+        <div className="max-w-7xl mx-auto px-4 reveal">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold mb-6 tracking-tight">Start Your Upgrade Today</h2>
-            <p className="text-slate-500 text-lg max-w-2xl mx-auto leading-relaxed">Take our 30-second qualification quiz to see if we're a fit for your business goals.</p>
+            <h2 className="text-sm font-bold text-blue-600 uppercase tracking-widest mb-4">Get Started</h2>
+            <h3 className="text-4xl font-black text-slate-900">Qualification Check</h3>
           </div>
           <QuizForm />
         </div>
       </section>
 
-      {/* Outcomes Strip */}
-      <section className="py-16 bg-blue-600 text-white overflow-hidden reveal">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col lg:flex-row items-center justify-between text-center lg:text-left space-y-10 lg:space-y-0">
-          {OUTCOMES.map((text, idx) => (
-            <div key={idx} className="flex items-center space-x-5 group">
-              <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center shrink-0 group-hover:bg-white group-hover:text-blue-600 transition-all duration-300">
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <span className="text-2xl md:text-3xl font-bold font-heading tracking-tight">{text}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* How It Works Section - The Smart Bundle */}
-      <section id="how-it-works" className="py-20 md:py-24 px-4 bg-white reveal">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold mb-6 tracking-tight">The Smart Bundle</h2>
-            <p className="text-slate-500 max-w-2xl mx-auto text-lg leading-relaxed">We don't just build websites. We build automated growth engines that handle everything from discovery to conversion.</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-            {HOW_IT_WORKS.map((card, idx) => (
-              <div 
-                key={idx} 
-                className="group p-8 bg-white border border-slate-100 rounded-[2rem] shadow-sm hover:shadow-xl transition-all duration-500 hover:-translate-y-2 flex flex-col items-center text-center reveal"
-                style={{ transitionDelay: `${idx * 50}ms` }}
-              >
-                <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
-                  {card.icon}
-                </div>
-                <h3 className="text-lg font-bold mb-4 tracking-tight">{card.title}</h3>
-                <p className="text-slate-500 text-sm leading-relaxed">{card.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Final CTA / Process Section */}
-      <section className="py-20 md:py-28 px-4 bg-slate-900 text-white overflow-hidden relative reveal">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-            <div>
-              <h2 className="text-3xl md:text-5xl font-bold mb-10 leading-tight tracking-tight">Ready to Scale Your Business?</h2>
-              <div className="space-y-10 mb-10">
-                {[
-                  { step: 1, title: 'We review your details', desc: 'Our team analyzes your current setup and goals to prepare a custom plan.' },
-                  { step: 2, title: 'We confirm missing info', desc: 'A quick call to align on branding, messaging, and automation triggers.' },
-                  { step: 3, title: 'We start your build', desc: 'Go live in as little as 14 days with a fully-integrated follow-up system.' }
-                ].map((item) => (
-                  <div key={item.step} className="flex items-start space-x-5 group">
-                    <div className="w-12 h-12 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-xl shrink-0 border border-blue-500/30">
-                      {item.step}
-                    </div>
-                    <div>
-                      <h4 className="text-lg font-bold mb-2">{item.title}</h4>
-                      <p className="text-slate-400 leading-relaxed text-base">{item.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-[2.5rem] p-10 md:p-16 text-slate-900 shadow-2xl transform hover:scale-[1.01] transition-transform duration-500 reveal">
-              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-center tracking-tight">Check Your Qualification</h3>
-              <p className="text-slate-500 text-center mb-10 text-lg leading-relaxed">Join hundreds of businesses growing smarter with AutomatesPH.</p>
-              <button 
-                onClick={scrollToQuiz}
-                className="w-full py-6 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold text-xl shadow-lg shadow-blue-100 transition-all hover:translate-y-[-4px] active:translate-y-0"
-              >
-                Launch Quiz Now
-              </button>
-            </div>
-          </div>
-        </div>
-        {/* Decor */}
-        <div className="absolute -bottom-32 -right-32 w-[400px] h-[400px] bg-blue-600 rounded-full blur-[150px] opacity-20" />
-      </section>
-
       {/* FAQ Section */}
-      <section className="py-20 md:py-28 px-4 bg-white reveal">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl md:text-5xl font-bold text-center mb-16 tracking-tight">Frequently Asked Questions</h2>
-          <div className="space-y-12">
+      <section className="py-24">
+        <div className="max-w-3xl mx-auto px-4">
+          <h3 className="text-4xl font-black text-center mb-16 reveal">FAQ</h3>
+          <div className="space-y-4">
             {FAQS.map((faq, idx) => (
-              <div key={idx} className="border-b border-slate-100 pb-12 last:border-0 group reveal">
-                <h4 className="text-xl md:text-2xl font-bold mb-4 leading-tight group-hover:text-blue-600 transition-colors">{faq.question}</h4>
-                <p className="text-slate-500 leading-relaxed text-base md:text-lg">{faq.answer}</p>
+              <div key={idx} className="border border-slate-100 rounded-2xl overflow-hidden reveal">
+                <button 
+                  onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
+                  className="w-full text-left px-8 py-6 flex justify-between items-center font-bold text-lg"
+                >
+                  {faq.question}
+                  <svg className={`w-6 h-6 transform transition-transform ${activeFaq === idx ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 9l-7 7-7-7" strokeWidth="2.5" />
+                  </svg>
+                </button>
+                {activeFaq === idx && (
+                  <div className="px-8 pb-8 text-slate-600 leading-relaxed animate-fade">
+                    {faq.answer}
+                  </div>
+                )}
               </div>
             ))}
           </div>
         </div>
       </section>
+
+      {/* Bundle Modal Content */}
+      {activeBundle && (
+        <ModalBase 
+          title={activeBundle.title} 
+          subtitle={activeBundle.subtitle} 
+          icon={activeBundle.icon}
+          navItems={HOW_IT_WORKS}
+          currentActive={activeBundle}
+          onNav={handleNav}
+          setter={setActiveBundle}
+          close={closeModals}
+          swipeDirection={swipeDirection}
+          onCTAClick={scrollToQuiz}
+        >
+          <div className="p-6 bg-[#FFF2F2] rounded-3xl border border-red-50 shadow-sm">
+            <p className="text-[10px] font-bold text-red-500 uppercase tracking-widest mb-3">The Problem</p>
+            <p className="text-slate-800 italic font-medium leading-relaxed text-sm">"{activeBundle.painPoint}"</p>
+          </div>
+          <div className="p-6 bg-[#F2FFF8] rounded-3xl border border-green-50 shadow-sm">
+            <p className="text-[10px] font-bold text-green-600 uppercase tracking-widest mb-3">The Smart Solution</p>
+            <p className="text-slate-800 font-medium leading-relaxed text-sm">{activeBundle.solution}</p>
+          </div>
+        </ModalBase>
+      )}
+
+      {/* Benefit Modal Content */}
+      {activeBenefit && (
+        <ModalBase 
+          title={activeBenefit.title} 
+          subtitle={activeBenefit.subtitle} 
+          icon={activeBenefit.icon}
+          navItems={OUTCOMES}
+          currentActive={activeBenefit}
+          onNav={handleNav}
+          setter={setActiveBenefit}
+          close={closeModals}
+          swipeDirection={swipeDirection}
+          onCTAClick={scrollToQuiz}
+        >
+          <div className="p-6 bg-blue-50/60 rounded-3xl border border-blue-50 shadow-sm">
+            <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-3">Business ROI</p>
+            <p className="text-slate-800 font-medium leading-relaxed text-sm">{activeBenefit.businessImpact}</p>
+          </div>
+          <div className="p-6 bg-slate-900 text-white rounded-3xl shadow-lg">
+            <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-3">Founder Result</p>
+            <p className="text-blue-50 font-medium leading-relaxed text-sm">{activeBenefit.founderResult}</p>
+          </div>
+        </ModalBase>
+      )}
+
+      {/* Blueprint Modal Content */}
+      {activeBlueprint && (
+        <ModalBase 
+          title={activeBlueprint.title} 
+          subtitle={activeBlueprint.subtitle} 
+          icon={null}
+          navItems={BLUEPRINT}
+          currentActive={activeBlueprint}
+          onNav={handleNav}
+          setter={setActiveBlueprint}
+          close={closeModals}
+          swipeDirection={swipeDirection}
+          onCTAClick={scrollToQuiz}
+        >
+          <div className="space-y-4">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">Core Deliverables</p>
+            <ul className="space-y-3">
+              {activeBlueprint.detailedKPIs.map((kpi, kIdx) => (
+                <li key={kIdx} className="flex items-center space-x-3 text-[14px] font-bold text-slate-700">
+                  <div className="w-5 h-5 bg-green-100 text-green-600 rounded-full flex items-center justify-center shrink-0">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path d="M5 13l4 4L19 7" strokeWidth="4" />
+                    </svg>
+                  </div>
+                  <span>{kpi}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 shadow-sm">
+            <p className="text-[10px] font-bold text-blue-600 uppercase tracking-[0.2em] mb-3">What to expect</p>
+            <p className="text-slate-700 leading-relaxed italic font-medium text-sm">
+              {activeBlueprint.expectation}
+            </p>
+          </div>
+        </ModalBase>
+      )}
     </div>
   );
 };
