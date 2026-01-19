@@ -37,6 +37,9 @@ const ModalBase: React.FC<ModalBaseProps> = ({
     <div 
       className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-modal-overlay"
       onClick={close}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
     >
       <div 
         className="bg-white text-slate-900 w-full max-w-[440px] rounded-2xl overflow-hidden shadow-2xl relative flex flex-col h-[640px] animate-modal-window"
@@ -46,6 +49,7 @@ const ModalBase: React.FC<ModalBaseProps> = ({
         <button 
           onClick={close}
           className="absolute top-6 right-6 text-slate-400 hover:text-slate-900 transition-colors z-[120]"
+          aria-label="Close modal"
         >
           <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
@@ -54,11 +58,11 @@ const ModalBase: React.FC<ModalBaseProps> = ({
 
         {/* Modal Header (Fixed) */}
         <div className="px-8 pt-8 pb-4 flex items-center space-x-5 shrink-0 bg-white">
-          <div className="w-14 h-14 bg-slate-900 text-white rounded-xl flex items-center justify-center shrink-0 shadow-lg">
+          <div className="w-14 h-14 bg-slate-900 text-white rounded-xl flex items-center justify-center shrink-0 shadow-lg" aria-hidden="true">
             {icon || <span className="font-bold text-xl">{currentActive.step}</span>}
           </div>
           <div className="min-w-0 pr-10">
-            <h4 key={title} className="text-2xl font-black text-slate-900 leading-none truncate animate-title-change mb-2">
+            <h4 id="modal-title" key={title} className="text-2xl font-black text-slate-900 leading-none truncate animate-title-change mb-2">
               {title}
             </h4>
             <p key={subtitle} className="text-[10px] font-bold text-blue-600 uppercase tracking-[0.15em] animate-title-change opacity-80">
@@ -85,9 +89,10 @@ const ModalBase: React.FC<ModalBaseProps> = ({
             <button 
               onClick={onCTAClick}
               className="w-full py-5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-xl shadow-blue-100 flex items-center justify-center space-x-3 active:scale-[0.98]"
+              aria-label="Upgrade My Business"
             >
               <span className="text-base">Upgrade My Business</span>
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
             </button>
@@ -98,6 +103,7 @@ const ModalBase: React.FC<ModalBaseProps> = ({
             <button 
               onClick={goPrev}
               disabled={currentIndex === 0}
+              aria-label="Previous item"
               className={`p-2 rounded-full transition-all ${currentIndex === 0 ? 'text-slate-200 cursor-not-allowed' : 'text-slate-400 hover:text-blue-600 hover:bg-white active:scale-90 shadow-sm'}`}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -106,7 +112,7 @@ const ModalBase: React.FC<ModalBaseProps> = ({
             </button>
 
             <div className="flex flex-col items-center space-y-2">
-              <div className="flex space-x-1.5">
+              <div className="flex space-x-1.5" aria-hidden="true">
                 {navItems.map((_, idx) => (
                   <div 
                     key={idx}
@@ -122,6 +128,7 @@ const ModalBase: React.FC<ModalBaseProps> = ({
             <button 
               onClick={goNext}
               disabled={currentIndex === navItems.length - 1}
+              aria-label="Next item"
               className={`p-2 rounded-full transition-all ${currentIndex === navItems.length - 1 ? 'text-slate-200 cursor-not-allowed' : 'text-slate-400 hover:text-blue-600 hover:bg-white active:scale-90 shadow-sm'}`}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -195,7 +202,7 @@ const LandingPage: React.FC = () => {
   return (
     <div className="bg-white">
       {/* Hero */}
-      <section className="relative pt-20 pb-28 overflow-hidden">
+      <section className="relative pt-20 pb-28 overflow-hidden" aria-labelledby="hero-title">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <div className="inline-flex items-center space-x-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-full mb-10 reveal">
              <span className="relative flex h-2 w-2">
@@ -204,7 +211,7 @@ const LandingPage: React.FC = () => {
             </span>
             <span className="text-xs font-bold uppercase tracking-widest">Growth Engines for Business</span>
           </div>
-          <h1 className="text-5xl md:text-7xl font-black font-heading tracking-tight text-slate-900 mb-8 leading-tight reveal">
+          <h1 id="hero-title" className="text-5xl md:text-7xl font-black font-heading tracking-tight text-slate-900 mb-8 leading-tight reveal">
             Transform Your Presence into a <br />
             <span className="text-blue-600">Lead Machine.</span>
           </h1>
@@ -215,12 +222,14 @@ const LandingPage: React.FC = () => {
             <button 
               onClick={() => document.getElementById('quiz-section')?.scrollIntoView({ behavior: 'smooth' })}
               className="px-10 py-5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-lg transition-all shadow-xl shadow-blue-100 transform hover:scale-105 active:scale-95"
+              aria-label="Start qualification quiz"
             >
               Check Qualification
             </button>
             <button 
               onClick={() => document.getElementById('bundle-section')?.scrollIntoView({ behavior: 'smooth' })}
               className="px-10 py-5 bg-white border border-slate-200 hover:border-slate-900 text-slate-900 rounded-xl font-bold text-lg transition-all"
+              aria-label="Scroll to bundle features"
             >
               Explore the Bundle
             </button>
@@ -229,11 +238,11 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Smart Bundle Sections */}
-      <section id="bundle-section" className="py-24 bg-slate-50">
+      <section id="bundle-section" className="py-24 bg-slate-50" aria-labelledby="bundle-title">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16 reveal">
             <h2 className="text-sm font-bold text-blue-600 uppercase tracking-widest mb-4">The Solution</h2>
-            <h3 className="text-4xl font-black text-slate-900">The Smart Bundle</h3>
+            <h3 id="bundle-title" className="text-4xl font-black text-slate-900">The Smart Bundle</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {HOW_IT_WORKS.map((item, idx) => (
@@ -244,9 +253,10 @@ const LandingPage: React.FC = () => {
                   setActiveBundle(item);
                 }}
                 className="group p-8 bg-white rounded-2xl border border-slate-100 text-left transition-all hover:shadow-2xl hover:-translate-y-1 reveal"
+                aria-label={`Learn more about our ${item.title} strategy`}
               >
                 <div className="flex items-center space-x-5 mb-6">
-                  <div className="flex-shrink-0 w-14 h-14 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110">
+                  <div className="flex-shrink-0 w-14 h-14 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110" aria-hidden="true">
                     {item.icon}
                   </div>
                   <div>
@@ -257,7 +267,7 @@ const LandingPage: React.FC = () => {
                 <p className="text-slate-500 leading-relaxed mb-6">{item.description}</p>
                 <span className="text-blue-600 font-bold text-xs uppercase tracking-widest flex items-center group-hover:translate-x-1 transition-transform">
                   View Strategy 
-                  <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M9 5l7 7-7 7" strokeWidth="2.5" />
                   </svg>
                 </span>
@@ -268,11 +278,11 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Blueprint Section */}
-      <section className="py-24 bg-slate-900 text-white">
+      <section className="py-24 bg-slate-900 text-white" aria-labelledby="blueprint-title">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16 reveal">
             <h2 className="text-sm font-bold text-blue-400 uppercase tracking-widest mb-4">Our Process</h2>
-            <h3 className="text-4xl font-black">14-Day Delivery</h3>
+            <h3 id="blueprint-title" className="text-4xl font-black">14-Day Delivery</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {BLUEPRINT.map((step, idx) => (
@@ -283,9 +293,10 @@ const LandingPage: React.FC = () => {
                     setActiveBlueprint(step);
                 }}
                 className="group p-8 bg-white/5 border border-white/10 rounded-2xl text-left transition-all hover:bg-white/10 reveal"
+                aria-label={`View details for step ${step.step}: ${step.title}`}
               >
                 <div className="flex items-center space-x-5 mb-6">
-                  <div className="relative flex-shrink-0 w-12 h-12 flex items-center justify-center">
+                  <div className="relative flex-shrink-0 w-12 h-12 flex items-center justify-center" aria-hidden="true">
                     <div className="absolute inset-0 rounded-full border-2 border-blue-500/20"></div>
                     <div className="absolute inset-0 rounded-full border-2 border-blue-500 border-t-transparent border-r-transparent animate-spin-slow"></div>
                     <span className="text-blue-400 font-bold relative z-10">{step.step}</span>
@@ -298,7 +309,7 @@ const LandingPage: React.FC = () => {
                 <p className="text-slate-400 mb-6">{step.desc}</p>
                 <span className="text-white font-bold text-xs uppercase tracking-widest flex items-center">
                   Full Timeline 
-                  <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M9 5l7 7-7 7" strokeWidth="2.5" />
                   </svg>
                 </span>
@@ -309,11 +320,11 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Results Section */}
-      <section className="py-24">
+      <section className="py-24" aria-labelledby="results-title">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16 reveal">
             <h2 className="text-sm font-bold text-blue-600 uppercase tracking-widest mb-4">Results</h2>
-            <h3 className="text-4xl font-black text-slate-900">Real Growth, Real Freedom</h3>
+            <h3 id="results-title" className="text-4xl font-black text-slate-900">Real Growth, Real Freedom</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {OUTCOMES.map((outcome, idx) => (
@@ -324,8 +335,9 @@ const LandingPage: React.FC = () => {
                     setActiveBenefit(outcome);
                 }}
                 className="group p-10 bg-slate-50 border border-slate-100 rounded-2xl text-left transition-all hover:bg-blue-600 hover:text-white hover:shadow-2xl hover:-translate-y-1 reveal"
+                aria-label={`Explore the ${outcome.title} outcome`}
               >
-                <div className="w-20 h-20 bg-white text-blue-600 rounded-xl flex items-center justify-center mb-8 shadow-sm group-hover:scale-110 transition-transform">
+                <div className="w-20 h-20 bg-white text-blue-600 rounded-xl flex items-center justify-center mb-8 shadow-sm group-hover:scale-110 transition-transform" aria-hidden="true">
                   {outcome.icon}
                 </div>
                 <h4 className="text-2xl font-bold mb-2">{outcome.title}</h4>
@@ -333,7 +345,7 @@ const LandingPage: React.FC = () => {
                 <p className="text-slate-500 mb-8 leading-relaxed group-hover:text-blue-50">{outcome.description}</p>
                 <span className="font-bold text-sm uppercase tracking-widest flex items-center">
                   See Business Impact 
-                  <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M9 5l7 7-7 7" strokeWidth="2.5" />
                   </svg>
                 </span>
@@ -344,29 +356,30 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Quiz Section */}
-      <section id="quiz-section" className="py-24 bg-slate-50 scroll-mt-20">
+      <section id="quiz-section" className="py-24 bg-slate-50 scroll-mt-20" aria-labelledby="quiz-title">
         <div className="max-w-7xl mx-auto px-4 reveal">
           <div className="text-center mb-16">
             <h2 className="text-sm font-bold text-blue-600 uppercase tracking-widest mb-4">Get Started</h2>
-            <h3 className="text-4xl font-black text-slate-900">Qualification Check</h3>
+            <h3 id="quiz-title" className="text-4xl font-black text-slate-900">Qualification Check</h3>
           </div>
           <QuizForm />
         </div>
       </section>
 
       {/* FAQ Section */}
-      <section className="py-24">
+      <section className="py-24" aria-labelledby="faq-title">
         <div className="max-w-3xl mx-auto px-4">
-          <h3 className="text-4xl font-black text-center mb-16 reveal">FAQ</h3>
+          <h3 id="faq-title" className="text-4xl font-black text-center mb-16 reveal">FAQ</h3>
           <div className="space-y-4">
             {FAQS.map((faq, idx) => (
               <div key={idx} className="border border-slate-100 rounded-xl overflow-hidden reveal">
                 <button 
                   onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
                   className="w-full text-left px-8 py-6 flex justify-between items-center font-bold text-lg"
+                  aria-expanded={activeFaq === idx}
                 >
                   {faq.question}
-                  <svg className={`w-6 h-6 transform transition-transform ${activeFaq === idx ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className={`w-6 h-6 transform transition-transform ${activeFaq === idx ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M19 9l-7 7-7-7" strokeWidth="2.5" />
                   </svg>
                 </button>
@@ -450,7 +463,7 @@ const LandingPage: React.FC = () => {
             <ul className="space-y-3">
               {activeBlueprint.detailedKPIs.map((kpi, kIdx) => (
                 <li key={kIdx} className="flex items-center space-x-3 text-[14px] font-bold text-slate-700">
-                  <div className="w-5 h-5 bg-green-100 text-green-600 rounded-full flex items-center justify-center shrink-0">
+                  <div className="w-5 h-5 bg-green-100 text-green-600 rounded-full flex items-center justify-center shrink-0" aria-hidden="true">
                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path d="M5 13l4 4L19 7" strokeWidth="4" />
                     </svg>
