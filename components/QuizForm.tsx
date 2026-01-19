@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LeadData, StepId } from '../types';
@@ -86,7 +85,7 @@ const QuizForm: React.FC = () => {
   const inputClasses = "w-full px-5 py-4 rounded-xl border border-slate-200 bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none placeholder:text-slate-400 text-lg";
 
   return (
-    <div className="max-w-2xl mx-auto bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-100">
+    <div className="max-w-2xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-100">
       {/* Progress Bar */}
       <div className="h-2.5 bg-slate-100 w-full overflow-hidden">
         <div 

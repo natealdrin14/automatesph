@@ -19,13 +19,27 @@ interface ModalBaseProps {
 const ModalBase: React.FC<ModalBaseProps> = ({ 
   title, subtitle, icon, children, close, navItems, currentActive, onNav, setter, swipeDirection, onCTAClick 
 }) => {
+  const currentIndex = navItems.indexOf(currentActive);
+  
+  const goPrev = () => {
+    if (currentIndex > 0) {
+      onNav(navItems[currentIndex - 1], navItems, setter);
+    }
+  };
+
+  const goNext = () => {
+    if (currentIndex < navItems.length - 1) {
+      onNav(navItems[currentIndex + 1], navItems, setter);
+    }
+  };
+
   return (
     <div 
       className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-modal-overlay"
       onClick={close}
     >
       <div 
-        className="bg-white text-slate-900 w-full max-w-[440px] rounded-[2.5rem] overflow-hidden shadow-2xl relative flex flex-col h-[640px] animate-modal-window"
+        className="bg-white text-slate-900 w-full max-w-[440px] rounded-2xl overflow-hidden shadow-2xl relative flex flex-col h-[640px] animate-modal-window"
         onClick={e => e.stopPropagation()}
       >
         {/* Fixed Close Button */}
@@ -40,20 +54,20 @@ const ModalBase: React.FC<ModalBaseProps> = ({
 
         {/* Modal Header (Fixed) */}
         <div className="px-8 pt-8 pb-4 flex items-center space-x-5 shrink-0 bg-white">
-          <div className="w-14 h-14 bg-slate-900 text-white rounded-2xl flex items-center justify-center shrink-0 shadow-lg">
+          <div className="w-14 h-14 bg-slate-900 text-white rounded-xl flex items-center justify-center shrink-0 shadow-lg">
             {icon || <span className="font-bold text-xl">{currentActive.step}</span>}
           </div>
-          <div className="min-w-0">
-            <p key={subtitle} className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-1 animate-title-change">
-              {subtitle}
-            </p>
-            <h4 key={title} className="text-3xl font-black text-slate-900 leading-none truncate animate-title-change">
+          <div className="min-w-0 pr-10">
+            <h4 key={title} className="text-2xl font-black text-slate-900 leading-none truncate animate-title-change mb-2">
               {title}
             </h4>
+            <p key={subtitle} className="text-[10px] font-bold text-blue-600 uppercase tracking-[0.15em] animate-title-change opacity-80">
+              {subtitle}
+            </p>
           </div>
         </div>
 
-        {/* Swiping Content Area (The only part that swipes) */}
+        {/* Swiping Content Area */}
         <div className="flex-grow px-8 pt-4 pb-4 bg-white relative overflow-hidden flex flex-col">
           <div 
             key={currentActive.title || currentActive.step} 
@@ -65,12 +79,12 @@ const ModalBase: React.FC<ModalBaseProps> = ({
           </div>
         </div>
 
-        {/* Persistent Footer: CTA + Chip Nav (Fixed) */}
+        {/* Persistent Footer: CTA + Swipe Navigation Indicator */}
         <div className="shrink-0 bg-white">
           <div className="px-8 pb-4">
             <button 
               onClick={onCTAClick}
-              className="w-full py-5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-all shadow-xl shadow-blue-100 flex items-center justify-center space-x-3 active:scale-[0.98]"
+              className="w-full py-5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all shadow-xl shadow-blue-100 flex items-center justify-center space-x-3 active:scale-[0.98]"
             >
               <span className="text-base">Upgrade My Business</span>
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -79,31 +93,41 @@ const ModalBase: React.FC<ModalBaseProps> = ({
             </button>
           </div>
 
-          {/* Modal Bottom Nav - Enhanced Horizontal Scroll with Fades */}
-          <div className="relative bg-slate-50 border-t border-slate-100">
-            {/* Left Fade Overlay */}
-            <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-slate-50 to-transparent z-10 pointer-events-none"></div>
-            
-            <div className="px-6 py-5 overflow-x-auto scrollbar-subtle scroll-smooth">
-              <div className="flex flex-nowrap gap-2 justify-start md:justify-center px-4 min-w-max">
-                {navItems.map((item: any, idx: number) => (
-                  <button
+          {/* Swipe Indicator Bar */}
+          <div className="bg-slate-50 border-t border-slate-100 px-8 py-5 flex items-center justify-between">
+            <button 
+              onClick={goPrev}
+              disabled={currentIndex === 0}
+              className={`p-2 rounded-full transition-all ${currentIndex === 0 ? 'text-slate-200 cursor-not-allowed' : 'text-slate-400 hover:text-blue-600 hover:bg-white active:scale-90 shadow-sm'}`}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+
+            <div className="flex flex-col items-center space-y-2">
+              <div className="flex space-x-1.5">
+                {navItems.map((_, idx) => (
+                  <div 
                     key={idx}
-                    onClick={() => onNav(item, navItems, setter)}
-                    className={`px-5 py-2.5 rounded-full text-[9px] font-bold uppercase tracking-[0.2em] transition-all border shrink-0 ${
-                      currentActive === item 
-                      ? 'bg-blue-600 text-white border-blue-600 shadow-lg transform scale-105' 
-                      : 'bg-white text-slate-400 border-slate-200 hover:border-blue-300 hover:text-blue-500 shadow-sm'
-                    }`}
-                  >
-                    {item.title || `Step ${item.step}`}
-                  </button>
+                    className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentIndex ? 'w-6 bg-blue-600' : 'w-1.5 bg-slate-200'}`}
+                  />
                 ))}
               </div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest animate-pulse">
+                Swipe Left or Right
+              </span>
             </div>
 
-            {/* Right Fade Overlay */}
-            <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-slate-50 to-transparent z-10 pointer-events-none"></div>
+            <button 
+              onClick={goNext}
+              disabled={currentIndex === navItems.length - 1}
+              className={`p-2 rounded-full transition-all ${currentIndex === navItems.length - 1 ? 'text-slate-200 cursor-not-allowed' : 'text-slate-400 hover:text-blue-600 hover:bg-white active:scale-90 shadow-sm'}`}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>
@@ -119,22 +143,16 @@ const LandingPage: React.FC = () => {
   
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right'>('right');
   const lastIndex = useRef(-1);
-  const scrollPosition = useRef(0);
 
-  // Body scroll locking
+  // Simple and safe scroll locking
   useEffect(() => {
     const isAnyModalOpen = !!(activeBundle || activeBenefit || activeBlueprint);
-    const body = document.body;
-    
     if (isAnyModalOpen) {
-      scrollPosition.current = window.scrollY;
-      body.style.top = `-${scrollPosition.current}px`;
-      body.classList.add('no-scroll');
+      document.body.classList.add('no-scroll');
     } else {
-      body.classList.remove('no-scroll');
-      body.style.top = '';
-      window.scrollTo(0, scrollPosition.current);
+      document.body.classList.remove('no-scroll');
     }
+    return () => document.body.classList.remove('no-scroll');
   }, [activeBundle, activeBenefit, activeBlueprint]);
 
   // Reveal-on-scroll
@@ -196,13 +214,13 @@ const LandingPage: React.FC = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 reveal">
             <button 
               onClick={() => document.getElementById('quiz-section')?.scrollIntoView({ behavior: 'smooth' })}
-              className="px-10 py-5 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold text-lg transition-all shadow-xl shadow-blue-100 transform hover:scale-105 active:scale-95"
+              className="px-10 py-5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-lg transition-all shadow-xl shadow-blue-100 transform hover:scale-105 active:scale-95"
             >
               Check Qualification
             </button>
             <button 
               onClick={() => document.getElementById('bundle-section')?.scrollIntoView({ behavior: 'smooth' })}
-              className="px-10 py-5 bg-white border border-slate-200 hover:border-slate-900 text-slate-900 rounded-2xl font-bold text-lg transition-all"
+              className="px-10 py-5 bg-white border border-slate-200 hover:border-slate-900 text-slate-900 rounded-xl font-bold text-lg transition-all"
             >
               Explore the Bundle
             </button>
@@ -225,14 +243,14 @@ const LandingPage: React.FC = () => {
                   lastIndex.current = idx;
                   setActiveBundle(item);
                 }}
-                className="group p-8 bg-white rounded-3xl border border-slate-100 text-left transition-all hover:shadow-2xl hover:-translate-y-1 reveal"
+                className="group p-8 bg-white rounded-2xl border border-slate-100 text-left transition-all hover:shadow-2xl hover:-translate-y-1 reveal"
               >
                 <div className="flex items-center space-x-5 mb-6">
-                  <div className="flex-shrink-0 w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110">
+                  <div className="flex-shrink-0 w-14 h-14 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110">
                     {item.icon}
                   </div>
                   <div>
-                    <h4 className="text-2xl font-bold text-slate-900 leading-none mb-1">{item.title}</h4>
+                    <h4 className="text-2xl font-bold text-slate-900 leading-none mb-2">{item.title}</h4>
                     <p className="text-xs font-bold text-blue-600 uppercase tracking-wider">{item.subtitle}</p>
                   </div>
                 </div>
@@ -264,14 +282,16 @@ const LandingPage: React.FC = () => {
                     lastIndex.current = idx;
                     setActiveBlueprint(step);
                 }}
-                className="group p-8 bg-white/5 border border-white/10 rounded-3xl text-left transition-all hover:bg-white/10 reveal"
+                className="group p-8 bg-white/5 border border-white/10 rounded-2xl text-left transition-all hover:bg-white/10 reveal"
               >
                 <div className="flex items-center space-x-5 mb-6">
-                  <div className="flex-shrink-0 w-12 h-12 rounded-full border-2 border-blue-500 flex items-center justify-center text-blue-400 font-bold">
-                    {step.step}
+                  <div className="relative flex-shrink-0 w-12 h-12 flex items-center justify-center">
+                    <div className="absolute inset-0 rounded-full border-2 border-blue-500/20"></div>
+                    <div className="absolute inset-0 rounded-full border-2 border-blue-500 border-t-transparent border-r-transparent animate-spin-slow"></div>
+                    <span className="text-blue-400 font-bold relative z-10">{step.step}</span>
                   </div>
                   <div>
-                    <h4 className="text-xl font-bold">{step.title}</h4>
+                    <h4 className="text-xl font-bold mb-2">{step.title}</h4>
                     <p className="text-[10px] font-bold text-blue-400 uppercase tracking-[0.2em]">{step.timeline}</p>
                   </div>
                 </div>
@@ -303,12 +323,13 @@ const LandingPage: React.FC = () => {
                     lastIndex.current = idx;
                     setActiveBenefit(outcome);
                 }}
-                className="group p-10 bg-slate-50 border border-slate-100 rounded-3xl text-left transition-all hover:bg-blue-600 hover:text-white hover:shadow-2xl hover:-translate-y-1 reveal"
+                className="group p-10 bg-slate-50 border border-slate-100 rounded-2xl text-left transition-all hover:bg-blue-600 hover:text-white hover:shadow-2xl hover:-translate-y-1 reveal"
               >
-                <div className="w-20 h-20 bg-white text-blue-600 rounded-3xl flex items-center justify-center mb-8 shadow-sm group-hover:scale-110 transition-transform">
+                <div className="w-20 h-20 bg-white text-blue-600 rounded-xl flex items-center justify-center mb-8 shadow-sm group-hover:scale-110 transition-transform">
                   {outcome.icon}
                 </div>
-                <h4 className="text-2xl font-bold mb-4">{outcome.title}</h4>
+                <h4 className="text-2xl font-bold mb-2">{outcome.title}</h4>
+                <p className="text-xs font-bold text-blue-600 uppercase tracking-widest mb-6 group-hover:text-blue-100">{outcome.subtitle}</p>
                 <p className="text-slate-500 mb-8 leading-relaxed group-hover:text-blue-50">{outcome.description}</p>
                 <span className="font-bold text-sm uppercase tracking-widest flex items-center">
                   See Business Impact 
@@ -339,7 +360,7 @@ const LandingPage: React.FC = () => {
           <h3 className="text-4xl font-black text-center mb-16 reveal">FAQ</h3>
           <div className="space-y-4">
             {FAQS.map((faq, idx) => (
-              <div key={idx} className="border border-slate-100 rounded-2xl overflow-hidden reveal">
+              <div key={idx} className="border border-slate-100 rounded-xl overflow-hidden reveal">
                 <button 
                   onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
                   className="w-full text-left px-8 py-6 flex justify-between items-center font-bold text-lg"
@@ -374,11 +395,11 @@ const LandingPage: React.FC = () => {
           swipeDirection={swipeDirection}
           onCTAClick={scrollToQuiz}
         >
-          <div className="p-6 bg-[#FFF2F2] rounded-3xl border border-red-50 shadow-sm">
+          <div className="p-6 bg-[#FFF2F2] rounded-2xl border border-red-50 shadow-sm">
             <p className="text-[10px] font-bold text-red-500 uppercase tracking-widest mb-3">The Problem</p>
             <p className="text-slate-800 italic font-medium leading-relaxed text-sm">"{activeBundle.painPoint}"</p>
           </div>
-          <div className="p-6 bg-[#F2FFF8] rounded-3xl border border-green-50 shadow-sm">
+          <div className="p-6 bg-[#F2FFF8] rounded-2xl border border-green-50 shadow-sm">
             <p className="text-[10px] font-bold text-green-600 uppercase tracking-widest mb-3">The Smart Solution</p>
             <p className="text-slate-800 font-medium leading-relaxed text-sm">{activeBundle.solution}</p>
           </div>
@@ -399,11 +420,11 @@ const LandingPage: React.FC = () => {
           swipeDirection={swipeDirection}
           onCTAClick={scrollToQuiz}
         >
-          <div className="p-6 bg-blue-50/60 rounded-3xl border border-blue-50 shadow-sm">
+          <div className="p-6 bg-blue-50/60 rounded-2xl border border-blue-50 shadow-sm">
             <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-3">Business ROI</p>
             <p className="text-slate-800 font-medium leading-relaxed text-sm">{activeBenefit.businessImpact}</p>
           </div>
-          <div className="p-6 bg-slate-900 text-white rounded-3xl shadow-lg">
+          <div className="p-6 bg-slate-900 text-white rounded-2xl shadow-lg">
             <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-3">Founder Result</p>
             <p className="text-blue-50 font-medium leading-relaxed text-sm">{activeBenefit.founderResult}</p>
           </div>
@@ -439,7 +460,7 @@ const LandingPage: React.FC = () => {
               ))}
             </ul>
           </div>
-          <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 shadow-sm">
+          <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 shadow-sm">
             <p className="text-[10px] font-bold text-blue-600 uppercase tracking-[0.2em] mb-3">What to expect</p>
             <p className="text-slate-700 leading-relaxed italic font-medium text-sm">
               {activeBlueprint.expectation}

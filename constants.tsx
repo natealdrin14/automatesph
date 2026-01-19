@@ -93,7 +93,7 @@ export interface BenefitOutcome {
 
 export const OUTCOMES: BenefitOutcome[] = [
   {
-    title: 'Rank higher. Get found.',
+    title: 'Authority',
     subtitle: 'Visibility & Trust',
     description: 'Dominating search results so your ideal customers find you before your competitors. High-intent traffic delivered daily.',
     icon: (
@@ -105,7 +105,7 @@ export const OUTCOMES: BenefitOutcome[] = [
     founderResult: "The confidence of knowing your business is authority-driven, not just luck-driven. You become the go-to expert in your local market by default."
   },
   {
-    title: 'Convert into customers.',
+    title: 'Conversion',
     subtitle: 'Efficiency & ROI',
     description: 'Stop wasting expensive traffic. Our layouts are psychologically engineered to turn passive browsers into active buyers.',
     icon: (
@@ -117,7 +117,7 @@ export const OUTCOMES: BenefitOutcome[] = [
     founderResult: "The peace of mind that your digital storefront is working 24/7 as your best salesperson. You can sleep soundly knowing no one is bouncing off your site confused."
   },
   {
-    title: 'Work smarter, not harder.',
+    title: 'Automation',
     subtitle: 'Automation & Freedom',
     description: 'Automate the boring stuff. Let our AI-driven systems handle the follow-ups while you focus on high-level closing.',
     icon: (
